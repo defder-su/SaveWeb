@@ -819,7 +819,7 @@ _wget() {
 	RAND="$(_random_value)"
 	echo "Log $RAND" > $MYTMPFILE
 	echo "$2" >> $MYTMPFILE
-	wget --adjust-extension --no-cache --page-requisites --restrict-file-names=windows --convert-links --backup-converted --no-host-directories --timeout=10 --tries=6 --append-output=$MYTMPFILE $1
+	wget --adjust-extension --no-cache --page-requisites --restrict-file-names=windows --convert-links --backup-converted --no-host-directories --timeout=10 --tries=6 --user-agent="Mozilla/5.0 (Windows NT 10.0; rv:91.0) Gecko/20100101 Firefox/91.0" --append-output=$MYTMPFILE $1
 	WGETERR=$?
 	RET=1
 	if [[ $WGETERR -eq 0 || $WGETERR -eq 8 ]] && [ $(ls -A "$MYTMPDIR" | wc -l) -ne 0 ]; then
@@ -1059,7 +1059,7 @@ save() {
 			return 1
 		fi
 	else
-		return 1	
+		return 1
 	fi
 }
 
