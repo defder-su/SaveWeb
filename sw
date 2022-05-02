@@ -970,14 +970,21 @@ save() {
 	if [[ "$1" == "urls" ]]; then
 		if [[ "$2" != "" ]]; then
 			_reprovidingWarning
-			"$0" urls "$2" 2>/dev/null | xargs -L1 "$0" save --no-warnings
-			if _check_free_space_for_temp
-			then
-				>&2 echo "Done"
-				return 0
-			else
-				return 1
-			fi
+			for I in $("$0" urls "$2" 2>/dev/null)
+			do
+				VERSIONS_COUNT=$(_versions $I | grep "^.*-wget$" | wc -l)
+				if [ "$VERSIONS_COUNT" -eq 0 ]; then
+					>&2 echo "Saving $I"
+					"$0" save --no-warnings $I
+				fi
+				if ! _check_free_space_for_temp
+				then
+					>&2 echo "Free disk space for temporary files and run the command again"
+					return 1
+				fi
+			done
+			>&2 echo "Done"
+			return 0
 		else
 			"$0" urls
 			return 1
@@ -1009,8 +1016,6 @@ save() {
 	done
 	if [ $_warnings -eq 1 ]; then
 		_reprovidingWarning
-	else
-		>&2 echo "Saving $URL"
 	fi
 	if [[ "$URL" == "" ]]; then
 		>&2 echo "This subcommand requires URL as a parameter"
@@ -1150,12 +1155,11 @@ Description:
 HEREDOC
 present() {
 	URL="$1"
-	HASH=$(hash "$URL")
+	HASH=$(hash "$URL" 2>/dev/null)
 	MFS_ADDR="/SaveWeb/pages/$HASH"
 	CID="$(ipfs files stat --hash $MFS_ADDR)"
 	if [[ "$CID" != "" ]]; then
 		if [[ "$HASH" == "" ]]; then
-			>&2 echo ""
 			>&2 echo "There is a content identifier of the SaveWeb Library,"
 			>&2 echo " sharing (or using with public gateways) is not safe"
 			>&2 echo ""
