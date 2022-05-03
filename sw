@@ -972,7 +972,7 @@ save() {
 			_reprovidingWarning
 			for I in $("$0" urls "$2" 2>/dev/null)
 			do
-				VERSIONS_COUNT=$(_versions $I | grep "^.*-wget$" | wc -l)
+				VERSIONS_COUNT=$(_versions $I | grep -e "^.*-wget$" -e "^.*-ip.s$" | wc -l)
 				if [ "$VERSIONS_COUNT" -eq 0 ]; then
 					>&2 echo "Saving $I"
 					"$0" save --no-warnings $I
@@ -1036,7 +1036,7 @@ save() {
 			ipfs files mkdir /SaveWeb 2>/dev/null
 			ipfs files mkdir /SaveWeb/pages 2>/dev/null
 			ipfs files mkdir $MFS_ADDR 2>/dev/null
-			URLTXTCID="$(printf "URL $(_random_value)\n$URL" | ipfs add --quieter --pin=false)"
+			URLTXTCID="$(printf "%s\n%s\n" "URL $(_random_value)" "$URL" | ipfs add --quieter --pin=false)"
 			ipfs files cp /ipfs/$URLTXTCID $MFS_ADDR/URL.txt
 		fi
 		if _check_free_space_for_temp
@@ -1080,22 +1080,28 @@ urls() {
 		>&2 echo "This subcommand requires file as a parameter:"
 		>&2 echo " txt - contain URLs in separate lines"
 		>&2 echo " json - contain URLs in the 'url' field"
-		return 1
+		>&2 echo ""
+		>&2 echo "There are URLs in the SaveWeb Library:"
+		
+		>&2 echo ""
 	fi
 	#while read line
 	#do
 	#	echo "$line"
 	#done < "${1:-/dev/stdin}"
-	if [[ $1 != *.json ]]; then
-		cat $1
-	else
+	if [[ $1 == *.json ]]; then
 		type -P jq &>/dev/null && ISINST=1 || ISINST=0
 		if [ $ISINST -eq 0 ]
 		then
 			>&2 echo "Error: jq is not installed (seeing https://stedolan.github.io/jq/download/)"
 			exit 127
 		fi
-		cat $1 | jq --raw-output '.. | .url? | strings'
+		cat $1 | jq --raw-output '.. | .url? | strings' | awk '!a[$0]++; fflush()'
+	elif [[ $1 == *.htm* ]]; then
+		>&2 echo "TODO"
+		exit 1
+	else
+		cat $1 | awk '!a[$0]++; fflush()'
 	fi
 }
 
