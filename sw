@@ -1083,7 +1083,17 @@ urls() {
 		>&2 echo ""
 		>&2 echo "There are URLs in the SaveWeb Library:"
 		
+		>&2 echo "There are URLs already in the SaveWeb Library:"
+		for I in $(ipfs files ls /SaveWeb/pages/); do
+			if [[ $I == page-* ]]; then
+				URL=$(ipfs files read /SaveWeb/pages/$I/URL.txt 2>/dev/null | sed -n 2p)
+				if [[ "$URL" != "" ]]; then
+					echo "$URL"
+				fi
+			fi
+		done
 		>&2 echo ""
+		return
 	fi
 	#while read line
 	#do
