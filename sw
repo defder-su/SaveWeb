@@ -1081,18 +1081,19 @@ urls() {
 		>&2 echo " txt - contain URLs in separate lines"
 		>&2 echo " json - contain URLs in the 'url' field"
 		>&2 echo ""
-		>&2 echo "There are URLs in the SaveWeb Library:"
-		
-		>&2 echo "There are URLs already in the SaveWeb Library:"
-		for I in $(ipfs files ls /SaveWeb/pages/); do
-			if [[ $I == page-* ]]; then
-				URL=$(ipfs files read /SaveWeb/pages/$I/URL.txt 2>/dev/null | sed -n 2p)
-				if [[ "$URL" != "" ]]; then
-					echo "$URL"
+		CID="$(ipfs files stat --hash /SaveWeb/pages/)"
+		if [[ "$CID" != "" ]]; then
+			>&2 echo "There are URLs already in the SaveWeb Library:"
+			for I in $(ipfs files ls /SaveWeb/pages/); do
+				if [[ $I == page-* ]]; then
+					URL=$(ipfs cat /ipfs/$CID/$I/URL.txt 2>/dev/null | sed -n 2p)
+					if [[ "$URL" != "" ]]; then
+						echo "$URL"
+					fi
 				fi
-			fi
-		done
-		>&2 echo ""
+			done
+			>&2 echo ""
+		fi
 		return
 	fi
 	#while read line
