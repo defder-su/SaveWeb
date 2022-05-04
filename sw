@@ -945,7 +945,8 @@ hash() {
 
 _addToHistory() {
 	mkdir "$HOME/.saveweb" 2>/dev/null
-	echo "$1" >> "$HOME/.saveweb/history.txt"
+	DT=$(export TZ=GMT ; date '+%Y-%m-%d GMT %H:%M:%S')
+	printf "%s\t%s\n" "$DT" "$1" >> "$HOME/.saveweb/history.txt"
 }
 
 _reprovidingWarning() {
