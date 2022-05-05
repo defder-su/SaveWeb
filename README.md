@@ -12,7 +12,7 @@
 
 ## Installation (Linux, macOS):
 
-Install [go-ipfs](https://docs.ipfs.io/install/command-line/), [wget](https://www.gnu.org/software/wget/), [jq](https://stedolan.github.io/jq/download/), and [Wayback Machine Downloader](https://github.com/ImportTaste/wayback-machine-downloader).
+Install [go-ipfs](https://docs.ipfs.io/install/command-line/), [wget](https://www.gnu.org/software/wget/), [jq](https://stedolan.github.io/jq/download/), [htmlq](https://github.com/mgdm/htmlq/) and [Wayback Machine Downloader](https://github.com/ImportTaste/wayback-machine-downloader).
 
 Clone the repository, open a terminal in the folder and run `./install.sh`
 
@@ -40,11 +40,6 @@ Open a terminal and run `sw` with arguments.
 
 ### List URLs which were attempted to be saved:
 `sw history`
-
----
-
-## Notes:
-
 
 ---
 

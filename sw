@@ -969,29 +969,25 @@ HEREDOC
 save() {
 	#TODO: --archives={default|none|last|all}, --tor={default|yes|no}
 	if [[ "$1" == "urls" ]]; then
-		if [[ "$2" != "" ]]; then
-			_reprovidingWarning
-			for I in $("$0" urls "$2" 2>/dev/null)
-			do
-				VERSIONS_COUNT=$(_versions $I | grep -e "^.*-wget$" -e "^.*-ip.s$" | wc -l)
-				if [ "$VERSIONS_COUNT" -eq 0 ]; then
-					>&2 echo "Saving $I"
-					"$0" save --no-warnings $I
-				fi
-				if ! _check_free_space_for_temp
-				then
-					>&2 echo "Free disk space for temporary files and run the command again"
-					return 1
-				fi
-			done
-			>&2 echo "Done"
-			return 0
-		else
-			"$0" urls
-			return 1
-		fi
+		_reprovidingWarning
+		for I in $("$0" urls "$2" "$3" "$4" 2>/dev/null)
+		do
+			VERSIONS_COUNT=$(_versions $I | grep -e "^.*-wget$" -e "^.*-ip.s$" | wc -l)
+			if [ "$VERSIONS_COUNT" -eq 0 ]; then
+				>&2 echo "Saving $I"
+				sleep 1
+				"$0" save --no-warnings $I
+			fi
+			if ! _check_free_space_for_temp
+			then
+				>&2 echo "Free disk space for temporary files and run the command again"
+				return 1
+			fi
+		done
+		>&2 echo "Done"
+		return 0
 	fi
-	URL="$1"
+	URL=""
 	local _arguments=()
 	local _warnings=1
 	local _val=
@@ -1005,7 +1001,7 @@ save() {
 		_exit_1 printf "Unexpected option: %s\\n" "${__arg}"
 		;;
 	  *)
-		if _blank "${_name}"
+		if _blank "${_URL}"
 		then
 		  _val="${__arg}"
 		  URL="$_val"
@@ -1077,14 +1073,30 @@ Description:
   List URLs from file (text or json)
 HEREDOC
 urls() {
-	if [[ "$1" == "" ]]; then
+	FIL=""
+	PARAM=""
+	GREP=""
+	for I in "$@"; do
+		if [[ $I == "--grep" ]]; then
+		  	PARAM="grep"
+		else
+			if [[ $PARAM == "grep" ]]; then
+				GREP=$I
+			else
+				FIL=$I
+			fi
+			PARAM=""
+		fi
+	done
+	if [[ "$FIL" == "" ]]; then
 		>&2 echo "This subcommand requires file as a parameter:"
 		>&2 echo " txt - contain URLs in separate lines"
 		>&2 echo " json - contain URLs in the 'url' field"
+		>&2 echo " html - contain URLs in the 'href' attribute"
 		>&2 echo ""
 		CID="$(ipfs files stat --hash /SaveWeb/pages/)"
 		if [[ "$CID" != "" ]]; then
-			>&2 echo "There are URLs already in the SaveWeb Library:"
+			>&2 echo "There are URLs already in the SaveWeb Library (see also 'sw history'):"
 			for I in $(ipfs files ls /SaveWeb/pages/); do
 				if [[ $I == page-* ]]; then
 					URL=$(ipfs cat /ipfs/$CID/$I/URL.txt 2>/dev/null | sed -n 2p)
@@ -1101,19 +1113,24 @@ urls() {
 	#do
 	#	echo "$line"
 	#done < "${1:-/dev/stdin}"
-	if [[ $1 == *.json ]]; then
+	if [[ $FIL == *.json ]]; then
 		type -P jq &>/dev/null && ISINST=1 || ISINST=0
 		if [ $ISINST -eq 0 ]
 		then
 			>&2 echo "Error: jq is not installed (seeing https://stedolan.github.io/jq/download/)"
 			exit 127
 		fi
-		cat $1 | jq --raw-output '.. | .url? | strings' | awk '!a[$0]++; fflush()'
-	elif [[ $1 == *.htm* ]]; then
-		>&2 echo "TODO"
-		exit 1
+		cat $FIL | jq --raw-output '.. | .url? | strings' | grep "$GREP" | awk '!a[$0]++; fflush()'
+	elif [[ $FIL == *.htm* ]]; then
+		type -P htmlq &>/dev/null && ISINST=1 || ISINST=0
+		if [ $ISINST -eq 0 ]
+		then
+			>&2 echo "Error: htmlq is not installed (seeing https://github.com/mgdm/htmlq/)"
+			exit 127
+		fi
+		cat $FIL | htmlq --attribute href a | grep "$GREP" | awk '!a[$0]++; fflush()'
 	else
-		cat $1 | awk '!a[$0]++; fflush()'
+		cat $FIL | grep "$GREP" | awk '!a[$0]++; fflush()'
 	fi
 }
 
