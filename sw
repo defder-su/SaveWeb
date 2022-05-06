@@ -944,7 +944,7 @@ hash() {
 }
 
 _addToHistory() {
-	mkdir "$HOME/.saveweb" 2>/dev/null
+	mkdir --parents "$HOME/.saveweb"
 	DT=$(export TZ=GMT ; date '+%Y-%m-%d GMT %H:%M:%S')
 	printf "%s\t%s\n" "$DT" "$1" >> "$HOME/.saveweb/history.txt"
 }
@@ -1107,11 +1107,24 @@ urls() {
 		CID="$(ipfs files stat --hash /SaveWeb/pages/)"
 		if [[ "$CID" != "" ]]; then
 			>&2 echo "There are URLs already in the SaveWeb Library (see also 'sw history'):"
+			mkdir --parents "$HOME/.saveweb/cache/urls"
 			for I in $(ipfs files ls /SaveWeb/pages/); do
 				if [[ $I == page-* ]]; then
-					URL=$(ipfs cat /ipfs/$CID/$I/URL.txt 2>/dev/null | sed -n 2p)
+					#echo $I
+					#URL=$(read 2>/dev/null < "$HOME/.saveweb/cache/urls/$I-URL")
+					URL=$(grep "" "$HOME/.saveweb/cache/urls/$I-URL" 2>/dev/null)
 					if [[ "$URL" != "" ]]; then
+						#>&2 echo "From cache"
 						echo "$URL" | grep "$GREP"
+					else
+						#>&2 echo "From IPFS"
+						URL=$(ipfs cat /ipfs/$CID/$I/URL.txt 2>/dev/null | sed -n 2p)
+						if [[ "$URL" != "" ]]; then
+							echo "$URL" > "$HOME/.saveweb/cache/urls/$I-URL"
+							echo "$URL" | grep "$GREP"
+						else
+							>&2 echo "$I not resolved"
+						fi
 					fi
 				fi
 			done
@@ -1152,7 +1165,7 @@ urls() {
 			>&2 echo "Attribute --base is only supported for html files"
 			exit 1
 		fi
-		cat $FIL | grep "$GREP" | awk '!a[$0]++; fflush()'
+		grep "$GREP" $FIL | awk '!a[$0]++; fflush()'
 	fi
 }
 
