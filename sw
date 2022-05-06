@@ -1110,20 +1110,18 @@ urls() {
 			mkdir --parents "$HOME/.saveweb/cache/urls"
 			for I in $(ipfs files ls /SaveWeb/pages/); do
 				if [[ $I == page-* ]]; then
-					#echo $I
-					#URL=$(read 2>/dev/null < "$HOME/.saveweb/cache/urls/$I-URL")
-					URL=$(grep "" "$HOME/.saveweb/cache/urls/$I-URL" 2>/dev/null)
+					MD5=`echo "$I" | md5sum | awk '{ print $1 }'`
+					CACHE_FILE="$HOME/.saveweb/cache/urls/$I-$MD5-URL"
+					URL=$(grep "" "$CACHE_FILE" 2>/dev/null)
 					if [[ "$URL" != "" ]]; then
-						#>&2 echo "From cache"
 						echo "$URL" | grep "$GREP"
 					else
-						#>&2 echo "From IPFS"
 						URL=$(ipfs cat /ipfs/$CID/$I/URL.txt 2>/dev/null | sed -n 2p)
 						if [[ "$URL" != "" ]]; then
-							echo "$URL" > "$HOME/.saveweb/cache/urls/$I-URL"
+							echo "$URL" > "$CACHE_FILE"
 							echo "$URL" | grep "$GREP"
 						else
-							>&2 echo "$I not resolved"
+							>&2 echo "Error: $I not resolved"
 						fi
 					fi
 				fi
