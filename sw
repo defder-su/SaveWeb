@@ -1111,7 +1111,7 @@ urls() {
 				if [[ $I == page-* ]]; then
 					URL=$(ipfs cat /ipfs/$CID/$I/URL.txt 2>/dev/null | sed -n 2p)
 					if [[ "$URL" != "" ]]; then
-						echo "$URL"
+						echo "$URL" | grep "$GREP"
 					fi
 				fi
 			done
