@@ -975,8 +975,8 @@ save() {
 			VERSIONS_COUNT=$(_versions $I | grep -e "^.*-wget$" -e "^.*-ip.s$" | wc -l)
 			if [ "$VERSIONS_COUNT" -eq 0 ]; then
 				>&2 echo -n "Saving $I"
-				#TODO: random delay?
-				for i in {1..5} ; do
+				rnumber=$((RANDOM%6+5))
+				for i in {1..$rnumber} ; do
 					sleep 1
 					>&2 echo -n "."
 				done
