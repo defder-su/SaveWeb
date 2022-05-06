@@ -1267,7 +1267,7 @@ present() {
 		fi
 		ipfs dag stat $CID | awk -v SUFFIX="$STAT" '{print $0 SUFFIX}' 1>&2
 	else
-		>&2 echo "Run 'sw save $1'"
+		>&2 echo "Run 'sw save ${@@Q}'"
 		exit 1
 	fi
 }
