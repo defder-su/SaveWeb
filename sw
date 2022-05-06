@@ -974,8 +974,12 @@ save() {
 		do
 			VERSIONS_COUNT=$(_versions $I | grep -e "^.*-wget$" -e "^.*-ip.s$" | wc -l)
 			if [ "$VERSIONS_COUNT" -eq 0 ]; then
-				>&2 echo "Saving $I"
-				sleep 1
+				>&2 echo -n "Saving $I"
+				for i in {1..5} ; do
+					sleep 1
+					>&2 echo -n "."
+				done
+				>&2 echo ""
 				"$0" save --no-warnings $I
 			fi
 			if ! _check_free_space_for_temp
