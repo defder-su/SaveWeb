@@ -970,11 +970,12 @@ save() {
 	#TODO: --archives={default|none|last|all}, --tor={default|yes|no}
 	if [[ "$1" == "urls" ]]; then
 		_reprovidingWarning
-		for I in $("$0" urls "$2" "$3" "$4" 2>/dev/null)
+		for I in $("$0" "$@" 2>/dev/null)
 		do
 			VERSIONS_COUNT=$(_versions $I | grep -e "^.*-wget$" -e "^.*-ip.s$" | wc -l)
 			if [ "$VERSIONS_COUNT" -eq 0 ]; then
 				>&2 echo -n "Saving $I"
+				#TODO: random delay?
 				for i in {1..5} ; do
 					sleep 1
 					>&2 echo -n "."
@@ -1080,12 +1081,17 @@ urls() {
 	FIL=""
 	PARAM=""
 	GREP=""
+	BASE=""
 	for I in "$@"; do
 		if [[ $I == "--grep" ]]; then
 		  	PARAM="grep"
+		elif [[ $I == "--base" ]]; then
+		  	PARAM="base"
 		else
 			if [[ $PARAM == "grep" ]]; then
 				GREP=$I
+			elif [[ $PARAM == "base" ]]; then
+				BASE=$I
 			else
 				FIL=$I
 			fi
@@ -1124,6 +1130,10 @@ urls() {
 			>&2 echo "Error: jq is not installed (seeing https://stedolan.github.io/jq/download/)"
 			exit 127
 		fi
+		if [[ "$BASE" != "" ]]; then
+			>&2 echo "Attribute --base is only supported for html files"
+			exit 1
+		fi
 		cat $FIL | jq --raw-output '.. | .url? | strings' | grep "$GREP" | awk '!a[$0]++; fflush()'
 	elif [[ $FIL == *.htm* ]]; then
 		type -P htmlq &>/dev/null && ISINST=1 || ISINST=0
@@ -1132,8 +1142,16 @@ urls() {
 			>&2 echo "Error: htmlq is not installed (seeing https://github.com/mgdm/htmlq/)"
 			exit 127
 		fi
-		cat $FIL | htmlq --attribute href a | grep "$GREP" | awk '!a[$0]++; fflush()'
+		if [[ "$BASE" != "" ]]; then
+			cat $FIL | htmlq --base="$BASE" --attribute href a | grep "$GREP" | awk '!a[$0]++; fflush()'
+		else
+			cat $FIL | htmlq --detect-base --attribute href a | grep "$GREP" | awk '!a[$0]++; fflush()'
+		fi
 	else
+		if [[ "$BASE" != "" ]]; then
+			>&2 echo "Attribute --base is only supported for html files"
+			exit 1
+		fi
 		cat $FIL | grep "$GREP" | awk '!a[$0]++; fflush()'
 	fi
 }
