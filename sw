@@ -1110,8 +1110,8 @@ urls() {
 			mkdir --parents "$HOME/.saveweb/cache/urls"
 			for I in $(ipfs files ls /SaveWeb/pages/); do
 				if [[ $I == page-* ]]; then
-					MD5=`echo "$I" | md5sum | awk '{ print $1 }'`
-					CACHE_FILE="$HOME/.saveweb/cache/urls/$I-$MD5-URL"
+					#MD5=`echo "$I" | md5sum | awk '{ print $1 }'`
+					CACHE_FILE="$HOME/.saveweb/cache/urls/$I-URL"
 					URL=$(grep "" "$CACHE_FILE" 2>/dev/null)
 					if [[ "$URL" != "" ]]; then
 						echo "$URL" | grep "$GREP"
