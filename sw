@@ -975,7 +975,7 @@ save() {
 			VERSIONS_COUNT=$(_versions $I | grep -e "^.*-wget$" -e "^.*-ip.s$" | wc -l)
 			if [ "$VERSIONS_COUNT" -eq 0 ]; then
 				>&2 echo -n "Saving $I"
-				local rnumber=$((RANDOM%6+5))
+				local rnumber=$((RANDOM%11+5))
 				for (( i = 1; i <= $rnumber; i++ )) ; do
 					sleep 1
 					>&2 echo -n "."
