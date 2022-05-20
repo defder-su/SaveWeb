@@ -45,7 +45,9 @@ Open a terminal and run `sw` with arguments.
 
 ## TODO:
 
-Support `--help` option for all commands, various exit codes.
+Support `--help` option for all commands.
+Support reading stdin in `url` subcommands, like `cat` supports `cat <<< "1"` and `echo "1" | cat`.
+Return various exit codes.
 
 ---
 
@@ -53,14 +55,7 @@ Support `--help` option for all commands, various exit codes.
 
 - [SaveSites](https://github.com/defder-su/SaveSites)
 
-- [RatBrowser](https://ratbrowser.com)
-
 - [IPFS](https://ipfs.io)
 
 - [ZeroNet](https://zeronet.dev)
 
----
-
-## Contact:
-
-You are welcome in [Defder.info](https://defder.info).
