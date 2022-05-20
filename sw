@@ -1222,6 +1222,43 @@ Description:
   Present saved versions of web page by URL
 HEREDOC
 present() {
+	if [[ "$1" == "urls" ]]; then
+		if [[ "$2" != "" ]]; then
+			ipfs files mkdir /SaveWeb 2>/dev/null
+			ipfs files mkdir /SaveWeb/presents 2>/dev/null
+			DT=$(export TZ=GMT ; date '+%Y%m%dGMT%H%M%S')
+			MFS_ADDR="/SaveWeb/presents/present-$DT"
+			ipfs files mkdir $MFS_ADDR 2>/dev/null
+			COUNT=0
+			for I in $("$0" "$@" 2>/dev/null)
+			do
+				HASH=$(hash "$I")
+				ipfs files cp /SaveWeb/pages/$HASH $MFS_ADDR/$HASH
+				if [ $? -eq 0 ]; then
+					((COUNT++))
+				fi
+			done
+			CID="$(ipfs files stat --hash $MFS_ADDR)"
+			if [[ "$CID" != "" && $COUNT -ne 0 ]]; then
+				GATEWAY=$(ipfs config Addresses.Gateway)
+				if [ $? -eq 0 ]; then
+					>&2 echo "Open http://127.0.0.1:${GATEWAY##*/}/ipfs/$CID"
+					>&2 echo " in a browser on the local machine"
+					>&2 echo ""
+				fi
+				echo "/ipfs/$CID"
+				>&2 echo ""
+				STAT=$", NumURLs: $COUNT"
+				ipfs dag stat $CID | awk -v SUFFIX="$STAT" '{print $0 SUFFIX}' 1>&2
+				return 0
+			fi
+		else
+			present
+			return $?
+		fi
+		>&2 echo "Run 'sw save ${@@Q}'"
+		return 1
+	fi
 	URL="$1"
 	HASH=$(hash "$URL" 2>/dev/null)
 	MFS_ADDR="/SaveWeb/pages/$HASH"
