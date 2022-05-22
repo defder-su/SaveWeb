@@ -1,1 +1,1 @@
-Use Install [MiceWeb](https://github.com/Robotizing/MiceWeb) instead.
+Use [MiceWeb](https://github.com/Robotizing/MiceWeb) instead.
